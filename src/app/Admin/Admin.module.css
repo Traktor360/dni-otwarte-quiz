@@ -1,0 +1,105 @@
+/* Admin.module.css */
+.loginCard {
+  background: var(--card-bg);
+  padding: 3rem;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+}
+
+.form { display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem; }
+.input { padding: 1rem; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem; }
+.button { padding: 1rem; background: var(--text-main); color: white; border: none; border-radius: 10px; font-weight: bold; }
+.error { color: var(--danger); }
+
+/* Główny panel */
+.container {
+  background: var(--card-bg);
+  padding: 2rem;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 1000px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+  margin-top: 1rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #f1f5f9;
+  padding-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.title { font-size: 1.8rem; margin-bottom: 0.5rem; }
+
+/* Statystyki i Licznik */
+.statsRow { display: flex; flex-direction: column; gap: 0.5rem; }
+.liveCounter {
+  display: flex;
+  gap: 10px;
+  background: #f1f5f9;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  align-items: center;
+}
+.liveCounter b { color: var(--text-main); font-size: 1.1rem; }
+.divider { color: #cbd5e1; }
+.pulsing { color: var(--primary); font-weight: 600; }
+
+.status { font-weight: 600; color: var(--text-muted); }
+.statusActive { color: var(--success); }
+.statusEnded { color: var(--danger); }
+.infoText { font-size: 0.85rem; color: var(--primary); margin-top: 0.5rem; font-style: italic; }
+
+.actions { display: flex; gap: 1rem; }
+
+.btnEnd { background: #e11d48; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: bold; transition: 0.3s; cursor: pointer; }
+.btnEnd:hover { background: #be123c; transform: scale(1.05); }
+
+.btnReset { background: #2563eb; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: bold; transition: 0.3s; cursor: pointer; }
+.btnReset:hover { background: #1d4ed8; transform: scale(1.05); }
+
+/* TABELA */
+.tableWrapper { overflow-x: auto; }
+.table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+.table th { text-align: left; padding: 1rem; color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; }
+.table td { padding: 1rem; background: #fff; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; }
+
+/* Zaokrąglenia wierszy */
+.table td:first-child { border-left: 1px solid #f1f5f9; border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
+.table td:last-child { border-right: 1px solid #f1f5f9; border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
+
+/* Animacja wierszy */
+@keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+.tableRow { animation: slideIn 0.4s ease-out forwards; }
+
+/* Style Nicków */
+.hiddenNick {
+  background: #e2e8f0; color: #94a3b8; padding: 0.2rem 0.8rem;
+  border-radius: 4px; font-family: monospace; letter-spacing: 3px; filter: blur(1px);
+}
+.revealedNick { font-weight: 700; color: var(--text-main); animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+@keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+/* MEDALE */
+.gold td { background: linear-gradient(90deg, #fffbeb, #fff); border-color: #fcd34d; }
+.silver td { background: linear-gradient(90deg, #f8fafc, #fff); border-color: #cbd5e1; }
+.bronze td { background: linear-gradient(90deg, #fff7ed, #fff); border-color: #fdba74; }
+
+.rankCell { font-weight: bold; font-size: 1.1rem; }
+.scoreCell { font-weight: 800; color: var(--primary); font-size: 1.1rem; }
+.dateCell { color: var(--text-muted); font-size: 0.9rem; }
+.empty { padding: 2rem; text-align: center; color: var(--text-muted); font-style: italic; }
+
+@media (max-width: 700px) {
+  .header { flex-direction: column; }
+  .actions { width: 100%; display: flex; flex-direction: column; }
+}
