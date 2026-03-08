@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import styles from './Admin.module.css';
 
@@ -8,11 +8,13 @@ function Admin() {
   const [results, setResults] = useState([]);
   const [playersCount, setPlayersCount] = useState(0);
   const [testStatus, setTestStatus] = useState(true);
+  const [revealStep, setRevealStep] = useState(0);
   
   // POPRAWKA: Prawidłowa definicja stanu ładowania
   const [loading, setLoading] = useState(false); 
   const [error, setError] = useState('');
   const [now, setNow] = useState(Date.now());
+  const resultsRef = useRef(null);
 
 
   // DODAJ TO: Ticker odświeżający czas co sekundę
@@ -91,12 +93,22 @@ function Admin() {
   }, [isAuthenticated]);
 
   // Funkcja: Zakończ test
-  const endTest = async () => {
-    if (window.confirm("ZAKOŃCZYĆ? Wszyscy zobaczą swoje wyniki i odkryjemy nicki!")) {
-      await supabase.from('settings').update({ is_test_active: false }).eq('id', 1);
-      setTestStatus(false);
-      fetchResults();
-    }
+  const startReveal = async () => {
+    if (!window.confirm("Zakończyć test i rozpocząć ceremonię podium?")) return;
+    
+    // 1. Zablokuj test w bazie
+    await supabase.from('settings').update({ is_test_active: false }).eq('id', 1);
+    setTestStatus(false);
+
+    // 2. Automatyczne przewinięcie ekranu do sekcji wyników
+    setTimeout(() => {
+      resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+
+    // 3. Sekwencja animacji (ZATRZYMUJE SIĘ NA KROKU 3)
+    setRevealStep(1);
+    setTimeout(() => setRevealStep(2), 3000);
+    setTimeout(() => setRevealStep(3), 6000);
   };
 
   // Funkcja: Reset grupy (NAPRAWIONA)
@@ -161,8 +173,11 @@ function Admin() {
     );
   }
 
-  const finishedCount = results.length;
-  const writingCount = Math.max(0, playersCount - finishedCount);
+  // --- KLUCZOWA POPRAWKA LOGIKI LICZNIKÓW ---
+  // Skończyło: Osoby, które mają już zapisany czas w bazie (time_seconds > 0)
+  const finishedCount = results.filter(r => r.time_seconds && r.time_seconds > 0).length;
+  // Pisze teraz: Wszyscy w tabeli results, którzy NIE mają jeszcze zapisanego czasu
+  const writingCount = results.filter(r => !r.time_seconds || r.time_seconds === 0).length;
 
   return (
     <div className={`animate-fade-in ${styles.container}`}>
@@ -189,7 +204,7 @@ function Admin() {
         
         <div className={styles.actions}>
           {testStatus ? (
-            <button onClick={endTest} className={styles.btnEnd}>
+            <button onClick={startReveal} className={styles.btnEnd}>
               ⏹ Odsłoń wyniki (Koniec)
             </button>
           ) : (
@@ -200,72 +215,129 @@ function Admin() {
         </div>
       </div>
 
-      <div className={styles.tableWrapper}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Miejsce</th>
-              <th>Uczeń</th>
-              <th>Wynik</th>
-              <th>Czas</th>
-              <th>Godzina</th>
-            </tr>
-          </thead>
-          <tbody>
-            {results.map((res, index) => {
-              let displayTime = "";
-              const isFinished = !!res.time_seconds; // Sprawdzamy czy ma zapisany czas końcowy
+      {/* --- SEKCJA PODIUM (POJAWIA SIĘ PO KLIKNIĘCIU KONIEC) --- */}
+      {!testStatus && revealStep > 0 && revealStep < 4 && (
+        <div className={styles.podiumOverlay} ref={resultsRef}>
+          <div className={styles.podiumHeader}>
+            <h2 className={styles.podiumTitle}>
+              {revealStep === 1 && "III Miejsce"}
+              {revealStep === 2 && "II Miejsce"}
+              {revealStep === 3 && "Zwycięzca! 🏆"}
+            </h2>
+            <p className={styles.podiumSubtitle}>Oficjalne wyniki rywalizacji</p>
+          </div>
 
-              if (isFinished) {
-                // Jeśli skończył - pokaż wynik z bazy
-                displayTime = formatTime(res.time_seconds);
-              } else {
-                // Jeśli w trakcie - oblicz: Teraz - CzasStworzeniaRekordu
-                const startTime = new Date(res.created_at).getTime();
-                const elapsed = Math.floor((now - startTime) / 1000);
-                displayTime = formatTime(elapsed);
-              }
+          <div className={styles.podiumContainer}>
+            {/* Miejsce 2 */}
+            <div className={`${styles.podiumBar} ${styles.silver} ${revealStep >= 2 ? styles.showBar : ''}`}>
+              <div className={styles.podiumAvatar}>{results[1]?.nickname?.charAt(0) || '?'}</div>
+              <div className={styles.podiumInfo}>
+                <span className={styles.pNick}>{results[1]?.nickname}</span>
+                <span className={styles.pScore}>{results[1]?.score} pkt</span>
+              </div>
+              <div className={styles.bar}>2</div>
+            </div>
 
-              let rowClass = styles.rowDefault;
-              let medal = '';
-              
-              if (!testStatus) {
-                if (index === 0) { rowClass = styles.gold; medal = '🥇'; }
-                else if (index === 1) { rowClass = styles.silver; medal = '🥈'; }
-                else if (index === 2) { rowClass = styles.bronze; medal = '🥉'; }
-              }
+            {/* Miejsce 1 */}
+            <div className={`${styles.podiumBar} ${styles.gold} ${revealStep >= 3 ? styles.showBar : ''}`}>
+              <div className={styles.podiumAvatar}>👑</div>
+              <div className={styles.podiumInfo}>
+                <span className={styles.pNick}>{results[0]?.nickname}</span>
+                <span className={styles.pScore}>{results[0]?.score} pkt</span>
+              </div>
+              <div className={styles.bar}>1</div>
+            </div>
 
-              return (
-                <tr key={res.id} className={`${styles.tableRow} ${rowClass}`}>
-                  <td className={styles.rankCell}>
-                    <span className={styles.rankNum}>#{index + 1}</span> {medal}
-                  </td>
-                  
-                  <td className={styles.nickCell}>
-                    {testStatus ? (
-                      <span className={styles.hiddenNick}>?????</span> 
-                    ) : (
-                      <span className={styles.revealedNick}>{res.nickname}</span>
-                    )}
-                  </td>
+            {/* Miejsce 3 */}
+            <div className={`${styles.podiumBar} ${styles.bronze} ${revealStep >= 1 ? styles.showBar : ''}`}>
+              <div className={styles.podiumAvatar}>{results[2]?.nickname?.charAt(0) || '?'}</div>
+              <div className={styles.podiumInfo}>
+                <span className={styles.pNick}>{results[2]?.nickname}</span>
+                <span className={styles.pScore}>{results[2]?.score} pkt</span>
+              </div>
+              <div className={styles.bar}>3</div>
+            </div>
+          </div>
+          {revealStep === 3 && (
+            <button 
+              onClick={() => setRevealStep(4)} 
+              className={styles.btnReset}
+              style={{ marginTop: '50px', padding: '1.2rem 2.5rem', fontSize: '1.2rem' }}
+            >
+              Pokaż pełną listę wyników 📊
+            </button>
+          )}
+        </div>
+      )}
 
-                  <td className={styles.scoreCell}>{res.score} / {res.total_questions}</td>
-                  <td className={styles.scoreCell}>
-                   <span style={{ color: isFinished ? 'inherit' : '#10b981', fontVariantNumeric: 'tabular-nums' }}>
-                      {displayTime}
-                      {!isFinished && " ⏱️"}
-                    </span>
-                  </td>
-                  <td className={styles.dateCell}>
-                    {new Date(res.created_at).toLocaleTimeString()}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        {results.length === 0 && <div className={styles.empty}>Czekam na wyniki...</div>}
-      </div>
+      {(testStatus || revealStep === 4) && (
+        <div className={styles.tableWrapper}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Miejsce</th>
+                <th>Uczeń</th>
+                <th>Wynik</th>
+                <th>Czas</th>
+                <th>Godzina</th>
+              </tr>
+            </thead>
+            <tbody>
+              {results.map((res, index) => {
+                let displayTime = "";
+                const isFinished = !!res.time_seconds; // Sprawdzamy czy ma zapisany czas końcowy
+
+                if (isFinished) {
+                  // Jeśli skończył - pokaż wynik z bazy
+                  displayTime = formatTime(res.time_seconds);
+                } else {
+                  // Jeśli w trakcie - oblicz: Teraz - CzasStworzeniaRekordu
+                  const startTime = new Date(res.created_at).getTime();
+                  const elapsed = Math.floor((now - startTime) / 1000);
+                  displayTime = formatTime(elapsed);
+                }
+
+                let rowClass = styles.rowDefault;
+                let medal = '';
+                
+                if (!testStatus) {
+                  if (index === 0) { rowClass = styles.gold; medal = '🥇'; }
+                  else if (index === 1) { rowClass = styles.silver; medal = '🥈'; }
+                  else if (index === 2) { rowClass = styles.bronze; medal = '🥉'; }
+                }
+
+                return (
+                  <tr key={res.id} className={`${styles.tableRow} ${rowClass}`}>
+                    <td className={styles.rankCell}>
+                      <span className={styles.rankNum}>#{index + 1}</span> {medal}
+                    </td>
+                    
+                    <td className={styles.nickCell}>
+                      {testStatus ? (
+                        <span className={styles.hiddenNick}>?????</span> 
+                      ) : (
+                        <span className={styles.revealedNick}>{res.nickname}</span>
+                      )}
+                    </td>
+
+                    <td className={styles.scoreCell}>{res.score} / {res.total_questions}</td>
+                    <td className={styles.scoreCell}>
+                    <span style={{ color: isFinished ? 'inherit' : '#10b981', fontVariantNumeric: 'tabular-nums' }}>
+                        {displayTime}
+                        {!isFinished && " ⏱️"}
+                      </span>
+                    </td>
+                    <td className={styles.dateCell}>
+                      {new Date(res.created_at).toLocaleTimeString()}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          {results.length === 0 && <div className={styles.empty}>Czekam na wyniki...</div>}
+        </div>
+      )}
     </div>
   );
 }

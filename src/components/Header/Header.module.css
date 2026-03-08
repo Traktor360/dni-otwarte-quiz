@@ -28,8 +28,6 @@
 .logo {
   height: 60px;
   width: auto;
-  mix-blend-mode: multiply; 
-  filter: contrast(1.1);
 }
 
 .divider {

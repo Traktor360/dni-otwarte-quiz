@@ -6,12 +6,10 @@
 }
 
 .mainContainer {
-  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 3rem 1.5rem;
   width: 100%;
-  max-width: 900px;
   margin: 0 auto;
 }

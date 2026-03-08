@@ -11,7 +11,9 @@ function Home() {
 
   const handleStart = async (e) => {
     e.preventDefault();
-    if (!nickname.trim()) {
+    const trimmedNick = nickname.trim();
+
+    if (!trimmedNick) {
       setError('Proszę wpisać swój nick!');
       return;
     }
@@ -20,7 +22,7 @@ function Home() {
     setError('');
 
     try {
-
+      // 1. Sprawdź, czy test jest aktywny
       const { data: settings } = await supabase.from('settings').select('is_test_active').eq('id', 1).single();
       
       if (settings && !settings.is_test_active) {
@@ -28,23 +30,37 @@ function Home() {
         setLoading(false);
         return;
       }
-      // 1. Dodajemy gracza do tabeli players (dla licznika "Dołączyło")
+
+      // --- NOWOŚĆ: SPRAWDZANIE UNIKALNOŚCI NICKU ---
+      const { data: existingUser } = await supabase
+        .from('results')
+        .select('nickname')
+        .eq('nickname', trimmedNick)
+        .maybeSingle(); // maybeSingle nie rzuca błędu, gdy nic nie znajdzie
+
+      if (existingUser) {
+        setError('Ten nick jest już zajęty! Wybierz inny.');
+        setLoading(false);
+        return;
+      }
+      // ----------------------------------------------
+
+      // 2. Dodajemy gracza do tabeli players
       const { error: playerError } = await supabase
         .from('players')
-        .insert([{ nickname }])
+        .insert([{ nickname: trimmedNick }])
         .select()
         .single();
 
       if (playerError) throw playerError;
 
-      // 2. NOWOŚĆ: Od razu tworzymy wpis w tabeli results z wynikiem 0
-      // Dzięki temu Admin widzi ucznia zanim ten skończy test
+      // 3. Tworzymy wpis w tabeli results
       const { data: resultData, error: resultError } = await supabase
         .from('results')
         .insert([{ 
-          nickname, 
+          nickname: trimmedNick, 
           score: 0, 
-          total_questions: 0 // Zaktualizujemy to w Quiz.jsx jak pobierzemy pytania
+          total_questions: 0 
         }])
         .select()
         .single();

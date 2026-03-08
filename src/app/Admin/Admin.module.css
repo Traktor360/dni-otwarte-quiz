@@ -17,12 +17,11 @@
 /* Główny panel */
 .container {
   background: var(--card-bg);
-  padding: 2rem;
-  border-radius: 24px;
+  padding: 3rem;
+  border-radius: 32px;
   width: 100%;
-  max-width: 1000px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.05);
-  margin-top: 1rem;
+  max-width: 1300px;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.05);
 }
 
 .header {
@@ -36,21 +35,21 @@
   gap: 1rem;
 }
 
-.title { font-size: 1.8rem; margin-bottom: 0.5rem; }
+.title { font-size: 2.5rem; margin-bottom: 0.8rem; }
 
 /* Statystyki i Licznik */
 .statsRow { display: flex; flex-direction: column; gap: 0.5rem; }
 .liveCounter {
   display: flex;
-  gap: 10px;
+  gap: 20px;
   background: #f1f5f9;
-  padding: 0.5rem 1rem;
+  padding: 0.8rem 1.5rem;
   border-radius: 8px;
-  font-size: 0.95rem;
+  font-size: 1.1rem;
   color: var(--text-muted);
   align-items: center;
 }
-.liveCounter b { color: var(--text-main); font-size: 1.1rem; }
+.liveCounter b { color: var(--text-main); font-size: 1.4rem; }
 .divider { color: #cbd5e1; }
 .pulsing { color: var(--primary); font-weight: 600; }
 
@@ -77,27 +76,139 @@
 .table td:first-child { border-left: 1px solid #f1f5f9; border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
 .table td:last-child { border-right: 1px solid #f1f5f9; border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
 
-/* Animacja wierszy */
-@keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
-.tableRow { animation: slideIn 0.4s ease-out forwards; }
+.tableRow {
+  transition: all 0.3s ease;
+  border-radius: 12px;
+}
+
+.tableRow:hover {
+  transform: scale(1.01) translateX(5px);
+  z-index: 10;
+}
 
 /* Style Nicków */
 .hiddenNick {
   background: #e2e8f0; color: #94a3b8; padding: 0.2rem 0.8rem;
   border-radius: 4px; font-family: monospace; letter-spacing: 3px; filter: blur(1px);
 }
-.revealedNick { font-weight: 700; color: var(--text-main); animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-@keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+.revealedNick { font-weight: 700; color: #1e293b; }
 
 /* MEDALE */
 .gold td { background: linear-gradient(90deg, #fffbeb, #fff); border-color: #fcd34d; }
 .silver td { background: linear-gradient(90deg, #f8fafc, #fff); border-color: #cbd5e1; }
 .bronze td { background: linear-gradient(90deg, #fff7ed, #fff); border-color: #fdba74; }
 
-.rankCell { font-weight: bold; font-size: 1.1rem; }
+.rankCell { font-weight: 800; font-size: 1.2rem; }
 .scoreCell { font-weight: 800; color: var(--primary); font-size: 1.1rem; }
 .dateCell { color: var(--text-muted); font-size: 0.9rem; }
 .empty { padding: 2rem; text-align: center; color: var(--text-muted); font-style: italic; }
+
+/* --- PROFESJONALNE PODIUM --- */
+.podiumOverlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5rem 1rem;
+  background: radial-gradient(circle at center, rgba(79, 70, 229, 0.05) 0%, transparent 70%);
+  animation: fadeIn 0.8s ease-out;
+}
+
+.podiumHeader { text-align: center; margin-bottom: 4rem; }
+
+.podiumTitle {
+  font-size: 3.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #1e293b 0%, #4f46e5 100%);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: -1px;
+}
+
+.podiumSubtitle { color: var(--text-muted); font-weight: 500; font-size: 1.2rem; }
+
+.podiumContainer {
+  display: flex;
+  align-items: flex-end;
+  gap: 40px;
+  height: 550px;
+  perspective: 1000px;
+}
+
+.podiumBar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  transform: translateY(100px) scale(0.9);
+  transition: all 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.showBar { opacity: 1; transform: translateY(0) scale(1); }
+
+.podiumAvatar {
+  width: 70px; height: 70px;
+  background: white;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.8rem; font-weight: 800;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  margin-bottom: 15px;
+  border: 4px solid #fff;
+}
+
+.pNick { font-size: 1.6rem; font-weight: 800; color: #1e293b; display: block; }
+.pScore { font-size: 1.2rem; color: var(--primary); font-weight: 700; opacity: 0.8; }
+
+.bar {
+  width: 250px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 4rem; font-weight: 900; color: white;
+  border-radius: 20px 20px 10px 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Szklane efekty dla słupków */
+.gold .bar { 
+  height: 280px; 
+  background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%);
+  box-shadow: 0 20px 40px rgba(217, 119, 6, 0.3);
+}
+.silver .bar { 
+  height: 200px; 
+  background: linear-gradient(180deg, #94a3b8 0%, #475569 100%);
+  box-shadow: 0 20px 40px rgba(71, 85, 105, 0.2);
+}
+.bronze .bar { 
+  height: 140px; 
+  background: linear-gradient(180deg, #cd7f32 0%, #8b4513 100%);
+  box-shadow: 0 20px 40px rgba(139, 69, 19, 0.2);
+}
+
+/* Połysk na słupkach */
+.bar::after {
+  content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transform: translateX(-100%);
+  animation: shine 3s infinite;
+}
+
+@keyframes shine { 100% { transform: translateX(100%); } }
+
+/* Specjalny efekt dla zwycięzcy */
+.gold .podiumAvatar {
+  background: #fef3c7;
+  border-color: #fbbf24;
+  animation: float 2s infinite ease-in-out;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
 
 @media (max-width: 700px) {
   .header { flex-direction: column; }

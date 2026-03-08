@@ -98,7 +98,7 @@ function Result() {
         <span className={styles.totalScore}>/ {playerData.total_questions}</span>
       </div>
 
-      <button onClick={() => navigate('/')} className={styles.button}>
+      <button onClick={() => navigate('/', { replace: true })} className={styles.button}>
         Zakończ i wróć na start
       </button>
     </div>
