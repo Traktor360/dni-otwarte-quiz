@@ -26,13 +26,32 @@ function Admin() {
   }, []);
 
   // Logowanie
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (password === import.meta.env.VITE_ADMIN_PASSWORD) {
-      setIsAuthenticated(true);
-      fetchInitialData();
-    } else {
-      setError('Błędne hasło.');
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.authenticated) {
+        setIsAuthenticated(true);
+        fetchInitialData();
+      } else {
+        setError(data.message || 'Błędne hasło.');
+      }
+    } catch {
+      setError('Błąd połączenia z serwerem.');
+    } finally {
+      setLoading(false);
     }
   };
 
