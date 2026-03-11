@@ -25,10 +25,18 @@ function Admin() {
     return () => clearInterval(timer);
   }, []);
 
+  const hashPassword = async (string) => {
+    const utf8 = new TextEncoder().encode(string);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+  };
+
   // Logowanie
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (password === import.meta.env.VITE_ADMIN_PASSWORD) {
+    const hashedInput = await hashPassword(password);
+    if (hashedInput === import.meta.env.VITE_ADMIN_PASSWORD) {
       setIsAuthenticated(true);
       fetchInitialData();
     } else {
