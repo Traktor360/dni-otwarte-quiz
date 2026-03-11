@@ -7,7 +7,7 @@ export default function handler(req, res) {
   const { password } = req.body;
 
   // Pobieramy hasło ze zmiennej środowiskowej na serwerze
-  const securePassword = import.meta.env.ADMIN_PASSWORD;
+  const securePassword = process.env.ADMIN_PASSWORD;
 
   if (!securePassword) {
     return res.status(500).json({ error: 'Server configuration error' });
