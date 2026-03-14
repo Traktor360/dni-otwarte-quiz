@@ -81,11 +81,6 @@
   border-radius: 12px;
 }
 
-.tableRow:hover {
-  transform: scale(1.01) translateX(5px);
-  z-index: 10;
-}
-
 /* Style Nicków */
 .hiddenNick {
   background: #e2e8f0; color: #94a3b8; padding: 0.2rem 0.8rem;
